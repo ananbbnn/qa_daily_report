@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>QA 回報統計</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 10px;
+
+        }
+
+        td,
+        th {
+            border: 1px solid #aaa;
+            padding: 1px;
+        }
+
+        h2 {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>QA 統計每日上傳</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <label for="report_date">回報日期:</label>
+        <input type="date" name="report_date" id="todayDate" required>
+        <br>
+        <input type="file" name="file" required>
+        <button type="submit">上傳 CSV</button>
+    </form>
+
+    {% if results %}
+    <h2>統計結果</h2>
+    <table id="my-table">
+        <tr>
+            <th style="color: red;" id="today-header">{{report_date}}</th>
+            <th>新問題</th>
+            <th>今日完成</th>
+            <th>累積未完成</th>
+            <th style="color: red;">重要未處理</th>
+            <th>外部未處理</th>
+        </tr>
+        {% for title in form_title %}
+        <tr>
+            <td>{{title}}</td>
+            {% if title != '合計' and title != '待測試' %}
+            {% for key, value in results.items() %}
+            <td style="text-align: right;">{{ value[title] if title in value else 0 }}</td>
+            {% endfor %}
+            {% elif title == '合計' %}
+            {% for total in results_total %}
+            <td style="text-align: right;">{{ total }}</td>
+            {% endfor %}
+            {% else %}
+            <td style="text-align: right;">{{ under_test }}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+
+    </table>
+    {% endif %}
+
+
+</body>
+<script>
+    // 把今天的日期轉換成 YYYY-MM-DD 格式
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('todayDate').value = today;
+
+
+</script>
+
+</html>
