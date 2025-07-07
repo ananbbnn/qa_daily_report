@@ -22,6 +22,7 @@ def save_stats(stats):
 def index():
     results = {}
     filename = None
+    report_date = ''
 
     if request.method == 'POST':
         file = request.files['file']
@@ -47,10 +48,47 @@ def index():
               'david.chen', 'jian.du']
             people_results = {person: {} for person in fixed_keys}
 
+            # 新問題
+            new_issues = df[(df['狀態'] == '已分配') & (df['回報日期'] == today)]['分配給'].value_counts().to_dict()
+            # 今日完成
+            done_tested = df[(df['狀態'] == '已測試') & (df['已更新'] == today)]
+            done_tested_count = done_tested['回報人'].value_counts().to_dict()
+            done_assigned = df[(df['狀態'] == '待測試') & (df['已更新'] == today)]
+            done_assigned_count = done_assigned['分配給'].value_counts().to_dict()
+            combined_done = {**done_tested_count, **done_assigned_count}
+            # 累積未完成
+            cumulative_unfinished = df[df['狀態'] == '已分配']['分配給'].value_counts().to_dict()
+            # 重要未處理
+            important_unprocessed = df[(df['狀態'] == '已分配') & (df['嚴重性'] == '重要')]['分配給'].value_counts().to_dict()
+            # 外部未處理
+            external_unprocessed = df[(df['狀態'] == '已分配') & (df['類別'] == 'HAPCS疾管署_愛滋追管系統')]['分配給'].value_counts().to_dict()
             
-            
-            
-            print(people_results)
+            daily_results = {
+                '新問題': new_issues,
+                '今日完成': combined_done,
+                '累積未完成': cumulative_unfinished,
+                '重要未處理': important_unprocessed,
+                '外部未處理': external_unprocessed
+            }
+            # 統計分類
+            all_categories = list(daily_results.keys())
+            # 寫入統計
+            for cat, data in daily_results.items():
+                for person, count in data.items():
+                    if person in people_results:
+                        people_results[person][cat] = count
+            # 合計
+            people_results['合計'] = {}
+            total_count = [sum(i.values()) for i in daily_results.values()]
+            for i,key in  enumerate(daily_results.keys()):
+                people_results['合計'][key] = total_count[i]
+
+
+
+
+
+
+            print(f'print:{people_results}')
             
            
             
