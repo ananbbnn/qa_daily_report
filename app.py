@@ -20,7 +20,8 @@ def save_stats(stats):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    results = {}
+    people_results = {}
+    all_categories = {}
     filename = None
     report_date = ''
 
@@ -72,6 +73,10 @@ def index():
             }
             # 統計分類
             all_categories = list(daily_results.keys())
+            # 補零
+            for person in fixed_keys:
+                for cat in all_categories:
+                    people_results[person][cat] = 0
             # 寫入統計
             for cat, data in daily_results.items():
                 for person, count in data.items():
@@ -82,66 +87,16 @@ def index():
             total_count = [sum(i.values()) for i in daily_results.values()]
             for i,key in  enumerate(daily_results.keys()):
                 people_results['合計'][key] = total_count[i]
+            # 待測試
+            under_test = df['狀態'] == '待測試'
+            under_test = int(under_test.sum())
+            people_results['待測試'] = {'新問題':under_test}
 
-
-
-
-
+            
 
             print(f'print:{people_results}')
             
-           
-            
-            
-
-    return render_template('index.html', results=results, filename=filename  ,report_date=report_date)
+    return render_template('index.html', results=people_results, filename=filename  ,report_date=report_date , all_categories=all_categories)
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-
-'''
-            form_title = ['ema.hong',
-                        'Szi',
-                        'weiren.yang',
-                        'yuwei.dee',
-                        'frank.huang',
-                        'jiaying.cai',
-                        'robin.wen',
-                        'david.chen',
-                        'jian.du',
-                        '合計',
-                        '待測試']
-            # 新問題
-            new_issues = df[(df['狀態'] == '已分配') & (df['回報日期'] == today)]['分配給'].value_counts().to_dict()
-            # 今日完成
-            done_tested = df[(df['狀態'] == '已測試') & (df['已更新'] == today)]
-            done_tested_count = done_tested['回報人'].value_counts().to_dict()
-            done_assigned = df[(df['狀態'] == '待測試') & (df['已更新'] == today)]
-            done_assigned_count = done_assigned['分配給'].value_counts().to_dict()
-            combined_done = {**done_tested_count, **done_assigned_count}
-            # 累積未完成
-            cumulative_unfinished = df[df['狀態'] == '已分配']['分配給'].value_counts().to_dict()
-            # 重要未處理
-            important_unprocessed = df[(df['狀態'] == '已分配') & (df['嚴重性'] == '重要')]['分配給'].value_counts().to_dict()
-            # 外部未處理
-            external_unprocessed = df[(df['狀態'] == '已分配') & (df['類別'] == 'HAPCS疾管署_愛滋追管系統')]['分配給'].value_counts().to_dict()
-            # 待測試
-            under_test = df['狀態'] == '待測試'
-            under_test = under_test.sum()
-            # 統計結果
-            daily_results = {
-                '新問題': new_issues,
-                '今日完成': combined_done,
-                '累積未完成': cumulative_unfinished,
-                '重要未處理': important_unprocessed,
-                '外部未處理': external_unprocessed
-            }
-            results_total = [sum(i.values()) for i in daily_results.values()]
-            results = daily_results
-            # results['合計'] = results_total
-            # results['待測試'] = under_test
-            # 儲存統計
-'''
