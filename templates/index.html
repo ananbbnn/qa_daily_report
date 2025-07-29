@@ -64,6 +64,11 @@
 
 
     </table>
+    {% else %}
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
     {% endif %}
 
 
@@ -72,7 +77,7 @@
     // 把今天的日期轉換成 YYYY-MM-DD 格式
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('todayDate').value = today;
-
+    // 按鈕點擊事件處理
     function handleSubmit(event) {
         const form = event.target;
         const clickedButton = document.activeElement; // 找出按下的是哪顆按鈕

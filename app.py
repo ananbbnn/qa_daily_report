@@ -36,8 +36,11 @@ def index():
                 filename = f"{UPLOAD_FOLDER}/qa_{report_date}.csv"
                 file.save(filename)
 
-        elif action == 'query':    #查詢按鍵
+        elif action == 'query' and os.path.exists(f"{UPLOAD_FOLDER}/qa_{report_date}.csv"):    #查詢按鍵
             filename = f"{UPLOAD_FOLDER}/qa_{report_date}.csv"
+        else:
+            return render_template('index.html', 
+                                   error=f'{report_date} 沒有紀錄。')
 
         # 讀檔與處理
         df = pd.read_csv(filename)
