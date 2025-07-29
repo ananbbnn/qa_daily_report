@@ -101,8 +101,21 @@ def index():
         people_results['待測試'] = {'新問題':under_test}
 
         
-
-        print(f'print:{people_results}')
+        if action == 'upload':
+            print(f'print:{people_results}')
+            # 儲存每月JSON檔
+            month_key = report_date[:6]
+            json_path = f"{UPLOAD_FOLDER}/JSON/qa_{month_key}.json"
+            if os.path.exists(json_path):
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    monthly_data = json.load(f)
+            else:
+                monthly_data = {}
+            monthly_data[report_date] = people_results
+            sorted_data = dict(sorted(monthly_data.items()))    # 日期排序
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(sorted_data, f, ensure_ascii=False, indent=2)
+            
             
     return render_template('index.html', 
                            results=people_results, 
@@ -110,7 +123,9 @@ def index():
                            report_date=report_date, 
                            all_categories=all_categories)
 
-
+@app.route('/month-trend', methods=['GET', 'POST'])
+def trend():
+    return render_template('month-trend.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
