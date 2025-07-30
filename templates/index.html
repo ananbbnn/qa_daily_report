@@ -1,20 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QA回報統計</title>
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
     {% include "navbar.html" %}
     <h1>每日回報</h1>
-    
+
 
     <form method="POST" enctype="multipart/form-data" onsubmit="return handleSubmit(event)">
         <label for="report_date">回報日期:</label>
