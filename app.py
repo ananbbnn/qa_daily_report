@@ -124,8 +124,17 @@ def index():
                            all_categories=all_categories)
 
 @app.route('/month-trend', methods=['GET', 'POST'])
-def trend():
-    return render_template('month-trend.html')
+def monthtrend():
+    # 重組資料
+    month = request.args.get('month', datetime.now().strftime('%Y%m'))
+    json_path = f"{UPLOAD_FOLDER}/JSON/qa_{month}.json"
+    if os.path.exists(json_path):
+        with open(json_path, 'r', encoding='utf-8') as f:
+            monthly_data = json.load(f)
+    else:
+        monthly_data = {}
+    print(f"Monthly data for {month}: {monthly_data}")
+    return render_template('month-trend.html', monthly_data=monthly_data)
 
 if __name__ == '__main__':
     app.run(debug=True)
