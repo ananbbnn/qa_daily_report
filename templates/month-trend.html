@@ -6,15 +6,113 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QA回報系統-每月趨勢圖</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 </head>
 
 <body>
     {% include "navbar.html" %}
     <h1>每月趨勢圖</h1>
-    <form>
-        <input type="month" id="monthSelector">
+    <form method="POST">
+        <input type="month" name="monthSelector" id="monthSelector" required>
         <button type="submit" class="btn btn-light">生成圖表</button>
     </form>
-</body>
+    {% if monthly_data %}
+    <h2>趨勢圖 - 有資料</h2>
+    <select id="personSelector" class="form-select mb-3"></select>
+    <div style="max-width: 1600px;">
+        <canvas id="trendChart"></canvas>
+    </div>
+    
+    {% else %}
+    {% if error %}
+    <h2 style="color: red;">{{ error }}</h2>
+    {% endif %}
 
+    {% endif %}
+
+</body>
+    <script>
+        const trendData = JSON.parse(`{{ result | tojson | safe }}`);
+        const personSelector = document.getElementById('personSelector');
+        const ctx = document.getElementById('trendChart').getContext('2d');
+
+        // 設定顏色
+        const colorMap = {
+            '新問題': 'red',
+            '今日完成': 'blue',
+            '累積未完成': 'orange',
+            '重要未處理': 'green',
+            '外部未處理': 'purple'
+        };
+
+        // 初始資料
+        let currentChart = null;
+
+        // 建立選單
+        for (const name in trendData) {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            personSelector.appendChild(opt);
+        }
+
+        // 畫圖函式
+        function renderChartForPerson(person) {
+            const data = trendData[person];
+            const labels = data.dates;
+
+            const datasets = Object.keys(colorMap).map(key => ({
+            label: key,
+            data: data[key],
+            borderColor: colorMap[key],
+            tension: 0.3,
+            fill: false
+            }));
+
+            if (currentChart) {
+            currentChart.destroy();
+            }
+
+            currentChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                title: {
+                    display: true,
+                    text: person + ' 趨勢圖'
+                }
+                },
+                scales: {
+                x: {
+                    title: {
+                    display: true,
+                    text: '日期'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                    display: true,
+                    text: '數量'
+                    }
+                }
+                }
+            }
+            });
+        }
+
+        // 初始畫第一人
+        renderChartForPerson(Object.keys(trendData)[0]);
+
+        // 綁定選擇事件
+        personSelector.addEventListener('change', e => {
+            renderChartForPerson(e.target.value);
+        });
+    </script>
 </html>

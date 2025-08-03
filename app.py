@@ -125,16 +125,37 @@ def index():
 
 @app.route('/month-trend', methods=['GET', 'POST'])
 def monthtrend():
+    monthly_data = {}
+    result = {}
+    if request.method == 'POST':
     # 重組資料
-    month = request.args.get('month', datetime.now().strftime('%Y%m'))
-    json_path = f"{UPLOAD_FOLDER}/JSON/qa_{month}.json"
-    if os.path.exists(json_path):
-        with open(json_path, 'r', encoding='utf-8') as f:
-            monthly_data = json.load(f)
-    else:
-        monthly_data = {}
-    print(f"Monthly data for {month}: {monthly_data}")
-    return render_template('month-trend.html', monthly_data=monthly_data)
+        month = request.form['monthSelector'].replace('-', '')
+        json_path = f"{UPLOAD_FOLDER}/JSON/qa_{month}.json"
+        if os.path.exists(json_path):
+            with open(json_path, 'r', encoding='utf-8') as f:
+                monthly_data = json.load(f)
+        else:
+            return render_template('month-trend.html', error=f'{month} 沒有紀錄。')
+        # 每一天的資料
+        for date, daily_data in monthly_data.items():
+            for person, metrics in daily_data.items():
+                if person not in result:
+                    # 初始化這個人
+                    result[person] = {
+                        'dates': [],
+                        '新問題': [],
+                        '今日完成': [],
+                        '累積未完成': [],
+                        '重要未處理': [],
+                        '外部未處理': []
+                    }
+                # 寫入資料
+                result[person]['dates'].append(date)
+                for key in ['新問題', '今日完成', '累積未完成', '重要未處理', '外部未處理']:
+                    result[person][key].append(metrics.get(key, 0))
+        
+        
+    return render_template('month-trend.html', monthly_data=monthly_data, result=result)
 
 if __name__ == '__main__':
     app.run(debug=True)
